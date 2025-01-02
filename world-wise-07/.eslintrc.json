@@ -1,0 +1,6 @@
+{
+  "extends": ["plugin:react/recommended", "eslint:recommended"],
+  "rules": {
+    "react/prop-types": "off"
+  }
+}
