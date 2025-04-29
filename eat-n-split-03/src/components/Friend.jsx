@@ -2,17 +2,19 @@ import Button from "./Button";
 
 function FriendList({ friends, onBillOpen, isOpen }) {
   return (
-    <ul>
-      {friends?.length > 0 &&
-        friends.map((el) => (
-          <Friend
-            friend={el}
-            key={el.id}
-            isOpen={isOpen}
-            onBillOpen={onBillOpen}
-          />
-        ))}
-    </ul>
+    <>
+      <ul>
+        {friends?.length > 0 &&
+          friends.map((el) => (
+            <Friend
+              friend={el}
+              key={el.id}
+              isOpen={isOpen}
+              onBillOpen={onBillOpen}
+            />
+          ))}
+      </ul>
+    </>
   );
 }
 
@@ -24,9 +26,9 @@ function Friend({ friend, isOpen, onBillOpen }) {
 
   if (friend.balance < 0) {
     className = "red";
-    message = `${friend.name} owes you ₹${Math.abs(friend.balance)}`;
+    message = `${friend.name} owes you ₹${+Math.abs(friend.balance).toFixed(2)}`;
   } else if (friend.balance > 0) {
-    message = `You owe ${friend.name} ₹${Math.abs(friend.balance)}`;
+    message = `You owe ${friend.name} ₹${+Math.abs(friend.balance).toFixed(2)}`;
     className = "green";
   }
 

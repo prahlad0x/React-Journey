@@ -44,9 +44,9 @@ function AddFriendForm({ isOpen, onAddFriend }) {
   );
 }
 
-function AddTransactionForm({ friend, onBillPayment }) {
-  const [billValue, setBillValue] = useState("");
-  const [yourExpense, setYourExpense] = useState("");
+function AddTransactionForm({ friend, onBillPayment, onDeleteFriend }) {
+  const [billValue, setBillValue] = useState(0);
+  const [yourExpense, setYourExpense] = useState(0);
   const [payingBill, setPayingBill] = useState("user");
 
   const friendExpense = billValue === "" ? billValue : billValue - yourExpense;
@@ -61,26 +61,40 @@ function AddTransactionForm({ friend, onBillPayment }) {
     setPayingBill("user");
   }
 
+  function handleFriendDelete(e) {
+    e.preventDefault();
+    if (!friend) return;
+    onDeleteFriend(friend.id);
+  }
+
   return (
-    <form className="form-split-bill" onSubmit={handleBillPayment}>
+    <form className="form-split-bill">
       <h2>Split a bill with {friend.name || "friend"}</h2>
 
       <label>💵 Bill value</label>
       <input
-        type="text"
+        type="number"
         placeholder="Total amount"
         value={billValue}
         onChange={(e) => {
-          setYourExpense(Math.min(yourExpense, +e.target.value));
-          setBillValue((v) => +e.target.value || 0);
+          setBillValue((v) => {
+            let value = +e.target.value || 0;
+            if (value < 0) return 0;
+            return value;
+          });
+          setYourExpense((v) => {
+            let value = +e.target.value || 0;
+            if (value < 0) return 0;
+            return value * 0.5;
+          });
         }}
       />
 
       <label>🙎‍♂️ Your expense</label>
       <input
-        type="text"
+        type="number"
         placeholder="Enter amount"
-        value={yourExpense}
+        value={+yourExpense.toFixed(2)}
         onChange={(e) => {
           setYourExpense(
             (v) =>
@@ -92,7 +106,7 @@ function AddTransactionForm({ friend, onBillPayment }) {
       <label>🦹‍♂️ {friend.name || "Friend"}'s expense</label>
       <input
         type="text"
-        value={friendExpense}
+        value={+(friendExpense || 0).toFixed(2)}
         placeholder="Amount.."
         disabled={true}
       />
@@ -108,7 +122,14 @@ function AddTransactionForm({ friend, onBillPayment }) {
         <option value="friend">{friend.name || "Friend"}</option>
       </select>
 
-      <Button>Split Bill</Button>
+      {friend?.id !== 1 ? (
+        <Button idToAdd="deleteBtn" onClick={handleFriendDelete}>
+          Delete Friend
+        </Button>
+      ) : (
+        ""
+      )}
+      <Button onClick={handleBillPayment}>Split Bill</Button>
     </form>
   );
 }

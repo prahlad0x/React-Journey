@@ -3,31 +3,34 @@ import { FriendList } from "./Friend";
 import { AddFriendForm, AddTransactionForm } from "./Form";
 import Button from "./Button";
 
-const initialFriends = [
-  {
-    id: 118836,
-    name: "Clark",
-    image: "https://i.pravatar.cc/48?u=118836",
-    balance: -7,
-  },
-  {
-    id: 933372,
-    name: "Sarah",
-    image: "https://i.pravatar.cc/48?u=933372",
-    balance: 20,
-  },
-  {
-    id: 499476,
-    name: "Anthony",
-    image: "https://i.pravatar.cc/48?u=499476",
-    balance: 0,
-  },
-];
-
 function App() {
-  const [friends, setFriends] = useState(initialFriends);
+  const [friends, setFriends] = useState(() => {
+    const data = localStorage.getItem("splitwise-friends");
+    return data
+      ? JSON.parse(data)
+      : [
+          {
+            id: 1,
+            name: "Kushwah Ji",
+            image: `https://i.pravatar.cc/48?u=1745949143179`,
+            balance: 0,
+          },
+        ];
+  });
   const [isAddFriendOpen, setAddFriendOpen] = useState(false);
   const [isBillOpen, setBillOpen] = useState(null);
+
+  const { toTake, toGive } = friends.reduce(
+    (acc, friend) => {
+      if (friend.balance < 0) {
+        acc.toGive += Math.abs(friend.balance);
+      } else if (friend.balance > 0) {
+        acc.toTake += Math.abs(friend.balance);
+      }
+      return acc;
+    },
+    { toTake: 0, toGive: 0 }
+  );
 
   const currentBill = friends.find((friend) => friend.id === isBillOpen);
 
@@ -37,25 +40,36 @@ function App() {
 
   function handleAddFriend(name, image) {
     if (!image || !name) return;
-    let id = new Date().getTime();
-    image = `${image}?u=${id}`;
+    let isFriendExist = friends.find((friend) => friend.name === name);
+    if (isFriendExist) {
+      setBillOpen(isFriendExist.id);
+      setAddFriendOpen(false);
+    } else {
+      let id = new Date().getTime();
+      image = `${image}?u=${id}`;
 
-    setFriends([...friends, { id, image, name, balance: 0 }]);
-    setAddFriendOpen(false);
-    setBillOpen(id);
+      setFriends((data) => {
+        localStorage.setItem(
+          "splitwise-friends",
+          JSON.stringify([...data, { id, image, name, balance: 0 }])
+        );
+        return [...data, { id, image, name, balance: 0 }];
+      });
+
+      setAddFriendOpen(false);
+      setBillOpen(id);
+    }
   }
 
   function handleBillPayment(bill, userAmount, doneBy) {
     if (!bill || !doneBy) return;
 
     let total = bill - userAmount;
-
     if (doneBy !== "user") {
       total = total - bill;
     }
-
-    setFriends((data) =>
-      data.map((el) => {
+    setFriends((data) => {
+      let updatedData = data.map((el) => {
         if (el.id === isBillOpen) {
           return {
             ...el,
@@ -63,36 +77,61 @@ function App() {
           };
         }
         return el;
-      })
-    );
+      });
+      localStorage.setItem("splitwise-friends", JSON.stringify(updatedData));
+      return updatedData;
+    });
 
     setBillOpen(null);
   }
 
+  function handleDeleteFriend(id) {
+    setFriends((data) => {
+      let updatedData = data.filter((friend) => friend.id !== id);
+      localStorage.setItem("splitwise-friends", JSON.stringify(updatedData));
+      return updatedData;
+    });
+    setBillOpen(null);
+  }
+
   return (
-    <div className="app">
-      <div className="sidebar">
-        <FriendList
-          friends={friends}
-          onBillOpen={setBillOpen}
-          isOpen={isBillOpen}
-        />
-
-        <AddFriendForm isOpen={isAddFriendOpen} onAddFriend={handleAddFriend} />
-
-        <Button onClick={handleAddFriendStatus}>
-          {isAddFriendOpen ? "Close" : "Add Friend"}
-        </Button>
+    <>
+      <div className="header">
+        <h1>Splitwise</h1>
+        <h2>
+          <span className="green">{toTake > 0 && `₹${+toTake.toFixed(2)} ↑↑`}</span>
+          <span className="red">{toGive >= 0 && `₹${+toGive.toFixed(2)} ↓↓`}</span>
+        </h2>
       </div>
+      <hr />
+      <div className="app">
+        <div className="sidebar">
+          <FriendList
+            friends={friends}
+            onBillOpen={setBillOpen}
+            isOpen={isBillOpen}
+          />
 
-      {isBillOpen && (
-        <AddTransactionForm
-          friend={currentBill}
-          onBillPayment={handleBillPayment}
-          key={isBillOpen}
-        />
-      )}
-    </div>
+          <AddFriendForm
+            isOpen={isAddFriendOpen}
+            onAddFriend={handleAddFriend}
+          />
+
+          <Button onClick={handleAddFriendStatus}>
+            {isAddFriendOpen ? "Close" : "Add Friend"}
+          </Button>
+        </div>
+
+        {isBillOpen && (
+          <AddTransactionForm
+            friend={currentBill}
+            onBillPayment={handleBillPayment}
+            key={isBillOpen}
+            onDeleteFriend={handleDeleteFriend}
+          />
+        )}
+      </div>
+    </>
   );
 }
 

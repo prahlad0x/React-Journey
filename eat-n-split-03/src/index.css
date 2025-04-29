@@ -25,12 +25,34 @@ body {
   justify-content: center;
 }
 
+hr {
+  margin-bottom: 1rem;
+}
+
 .app {
   min-height: 66vh;
   display: grid;
   grid-template-columns: 34rem 44rem;
   column-gap: 4rem;
   align-items: start;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  padding: 1.2rem;
+}
+
+.header h1 {
+  font-size: 2.4rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.header h2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .button {
@@ -55,6 +77,7 @@ body {
   gap: 0.4rem;
   font-size: 1.4rem;
   margin-bottom: 2rem;
+  border-bottom: #d3a259 0.3px solid;
 }
 
 .sidebar li {
@@ -62,10 +85,10 @@ body {
   grid-template-columns: 4.8rem 1fr auto;
   align-items: center;
   column-gap: 1.6rem;
-
   padding: 1.2rem;
   border-radius: 7px;
   transition: 0.5s;
+  border-bottom: #dfe4e8 0.3px solid;
 }
 
 .selected,
@@ -166,4 +189,38 @@ form h2 {
   text-transform: uppercase;
   letter-spacing: -0.5px;
   margin-bottom: 1.6rem;
+}
+
+#deleteBtn {
+  grid-column: 1;
+  background-color: #b53232;
+  color: #fff4e6;
+}
+
+@media (max-width: 700px) {
+ 
+  body {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  
+  .app {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 5%;
+    gap: 2rem;
+  }
+  
+
+  .sidebar {
+    border-radius: 7px;
+    width: 100%;
+    padding-bottom: 20px;
+  }
+  
+  .form-split-bill {
+   width: 100%;
+  }
+  
 }
